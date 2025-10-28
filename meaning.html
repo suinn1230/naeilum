@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Choose Meaning | Naeilum</title>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Pretendard, sans-serif;
+      text-align: center;
+      margin: 60px;
+      background-color: #fafafa;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    .meaning-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .meaning-btn {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 14px 0;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+    .meaning-btn:hover {
+      background-color: #f0f9f0;
+      border-color: #4CAF50;
+    }
+    .meaning-btn.selected {
+      background-color: #4CAF50;
+      color: white;
+      border-color: #4CAF50;
+      font-weight: 600;
+    }
+    #nextBtn {
+      margin-top: 40px;
+      padding: 12px 28px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+    #nextBtn:hover {
+      background-color: #3b9442;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🌸 Choose the Meaning of Your Name</h2>
+  <p>What kind of meaning do you want your name to carry?</p>
+
+  <div class="meaning-grid" id="meaningGrid">
+    <button class="meaning-btn">Wisdom</button>
+    <button class="meaning-btn">Love</button>
+    <button class="meaning-btn">Beauty</button>
+    <button class="meaning-btn">Luck</button>
+    <button class="meaning-btn">Harmony</button>
+    <button class="meaning-btn">Strength</button>
+    <button class="meaning-btn">Light / Hope</button>
+    <button class="meaning-btn">Diligence</button>
+    <button class="meaning-btn">Freedom</button>
+    <button class="meaning-btn">Peace</button>
+    <button class="meaning-btn">Talent</button>
+    <button class="meaning-btn">Nature</button>
+  </div>
+
+  <button id="nextBtn">Next →</button>
+
+  <script>
+    const buttons = document.querySelectorAll('.meaning-btn');
+    let selectedMeaning = null;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedMeaning = btn.textContent;
+      });
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (!selectedMeaning) {
+         alert("Please select a meaning for your name!");
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get("name");
+    const gender = params.get("gender");
+    // ✅ name, gender, meaning 모두 전달
+    window.location.href = `https://emilleschegg.github.io/naeilum-name-generator/naeilum_files/result.html?name=${encodeURIComponent(name)}&gender=${gender}&meaning=${encodeURIComponent(selectedMeaning)}`;
+  });
+  </script>
+
+</body>
+</html>
+
+
