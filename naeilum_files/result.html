@@ -5,51 +5,121 @@
 <title>Your Korean Name | Naeilum</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
-body {font-family:Pretendard,sans-serif;text-align:center;margin:60px;background:#fafafa;}
-h2{color:#333;}
-.result-container{display:flex;justify-content:center;gap:25px;margin-top:50px;flex-wrap:wrap;}
-.card{width:220px;border:1px solid #ccc;border-radius:12px;background:#fff;padding:20px;
-box-shadow:0 3px 6px rgba(0,0,0,0.1);text-align:center;transition:transform 0.2s;}
-.card:hover{transform:translateY(-5px);}
-.card h3{font-size:22px;color:#333;margin-bottom:5px;}
-.card p{margin:4px 0;color:#555;}
-.card .meaning{color:#4CAF50;font-weight:600;}
+body {
+  font-family: Pretendard, sans-serif;
+  text-align: center;
+  margin: 60px;
+  background: #fafafa;
+}
+h2 { color: #333; }
+.result-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 50px;
+  flex-wrap: wrap;
+}
+.card {
+  width: 220px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background: #fff;
+  padding: 20px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-5px); }
+.card h3 { font-size: 22px; color: #333; margin-bottom: 5px; }
+.card p { margin: 4px 0; color: #555; }
+.card .meaning { color: #4CAF50; font-weight: 600; }
 </style>
 </head>
 <body>
+
 <h2>✨ Your Korean Name Recommendations ✨</h2>
 <div id="results" class="result-container"></div>
+
 <script>
+// ✅ URL에서 데이터 가져오기
 const params = new URLSearchParams(window.location.search);
 const engName = params.get("name")?.trim() || "";
 const gender = params.get("gender") || "female";
 const meaning = params.get("meaning");
 
-const initialMap = {a:"ㅇ",e:"ㅇ",i:"ㅇ",o:"ㅇ",u:"ㅇ",b:"ㅂ",p:"ㅂ",c:"ㅋ",k:"ㅋ",q:"ㅋ",d:"ㄷ",t:"ㄷ",
-f:"ㅍ",v:"ㅍ",g:"ㄱ",h:"ㅎ",j:"ㅈ",l:"ㄹ",r:"ㄹ",m:"ㅁ",n:"ㄴ",s:"ㅅ",w:"ㅇ",y:"ㅇ",x:"ㅅ",z:"ㅈ"};
+// ✅ 초성 매핑 (영문 → 한글 초성)
+const initialMap = {
+  a:"ㅇ", e:"ㅇ", i:"ㅇ", o:"ㅇ", u:"ㅇ",
+  b:"ㅂ", p:"ㅂ", c:"ㅋ", k:"ㅋ", q:"ㅋ",
+  d:"ㄷ", t:"ㄷ", f:"ㅍ", v:"ㅍ", g:"ㄱ",
+  h:"ㅎ", j:"ㅈ", l:"ㄹ", r:"ㄹ", m:"ㅁ",
+  n:"ㄴ", s:"ㅅ", w:"ㅇ", y:"ㅇ", x:"ㅅ", z:"ㅈ"
+};
+
 const firstLetter = engName[0]?.toLowerCase();
 const targetInitial = initialMap[firstLetter] || "ㅇ";
-const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
+const csvFile = gender === "male" ? "naeilum_files/male_names.csv" : "naeilum_files/female_names.csv";
 
+// ✅ CSV 불러오기
 fetch(csvFile)
-.then(res=>res.text())
-.then(text=>{
- const rows=text.split("\n").slice(1);
- const data=rows.map(line=>{
-   const [name,hanja,mean]=line.split(",");
-   return {name:name?.trim(),hanja:hanja?.trim(),mean:mean?.trim()};
- });
- let filtered=data.filter(r=>r.mean?.toLowerCase()===meaning.toLowerCase());
- const choList={"ㄱ":["가","강","고","공","권","기","건"],"ㄴ":["나","노","남","누","니"],"ㄷ":["다","도","동","두"],
-"ㄹ":["라","로","류","리"],"ㅁ":["마","민","명","미","문"],"ㅂ":["박","배","백","보","빈"],"ㅅ":["서","소","수","시","선"],
-"ㅇ":["아","안","오","우","유","은","이","여","윤"],"ㅈ":["지","주","진","재","준","제"],"ㅊ":["차","채","초"],
-"ㅋ":["규","기","경"],"ㅌ":["태","탁"],"ㅍ":["표","필","풍"],"ㅎ":["하","현","혜","효"]};
- const possible=choList[targetInitial]||[];
- filtered=filtered.filter(r=>possible.some(s=>r.name.startsWith(s)));
- const shuffled=filtered.sort(()=>Math.random()-0.5).slice(0,3);
- const html=shuffled.map(r=>`<div class="card"><h3>${r.name}</h3><p>${r.hanja}</p><p class="meaning">${r.mean}</p></div>`).join("");
- document.getElementById("results").innerHTML=html||"<p>No matching names found 😢</p>";
+.then(res => res.text())
+.then(text => {
+  const rows = text.split("\n").slice(1);
+  const data = rows.map(line => {
+    const [name, hanja, mean] = line.split(",");
+    return { name: name?.trim(), hanja: hanja?.trim(), mean: mean?.trim() };
+  });
+
+  // ① 의미 필터링
+  let filtered = meaning
+    ? data.filter(r => r.mean?.toLowerCase().includes(meaning.toLowerCase()))
+    : data;
+
+  // ② 초성 매칭
+  const choList = {
+    "ㄱ": ["가","강","고","공","권","기","건"],
+    "ㄴ": ["나","노","남","누","니"],
+    "ㄷ": ["다","도","동","두"],
+    "ㄹ": ["라","로","류","리"],
+    "ㅁ": ["마","민","명","미","문"],
+    "ㅂ": ["박","배","백","보","빈"],
+    "ㅅ": ["서","소","수","시","선"],
+    "ㅇ": ["아","안","오","우","유","은","이","여","윤"],
+    "ㅈ": ["지","주","진","재","준","제"],
+    "ㅊ": ["차","채","초"],
+    "ㅋ": ["규","기","경"],
+    "ㅌ": ["태","탁"],
+    "ㅍ": ["표","필","풍"],
+    "ㅎ": ["하","현","혜","효"]
+  };
+  const possible = choList[targetInitial] || [];
+
+  // ③ 초성 매칭 필터 추가
+  let result = filtered.filter(r =>
+    possible.some(p => r.name?.startsWith(p))
+  );
+
+  // ④ 결과 없을 때 예외처리
+  if (result.length === 0) {
+    result = data.sort(() => 0.5 - Math.random()).slice(0, 3); // 랜덤 3개
+  }
+
+  // ⑤ 결과 HTML 생성
+  const html = result.map((r, i) => `
+    <div class="card">
+      <h3>${r.name}</h3>
+      <p><b>Hanja:</b> ${r.hanja}</p>
+      <p class="meaning">${r.mean}</p>
+    </div>
+  `).join("");
+
+  document.getElementById("results").innerHTML = html;
 })
-.catch(err=>{console.error(err);document.getElementById("results").innerHTML="<p>Error loading name data.</p>";});
+.catch(err => {
+  console.error(err);
+  document.getElementById("results").innerHTML = "<p>⚠️ Error loading name data.</p>";
+});
 </script>
-</body></html>
+
+</body>
+</html>
