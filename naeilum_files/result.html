@@ -60,20 +60,11 @@ const fullName = params.get("name")?.trim() || "";
 const gender = params.get("gender") || "female";
 const category = params.get("category")?.trim() || "";
 
-// ✅ First name만 추출
+// ✅ First name 첫 글자만 사용
 const firstName = fullName.split(" ")[0] || fullName;
+const firstLetter = firstName[0]?.toUpperCase() || "A";
 
-// ✅ 초성 매핑 (영문 → 한글 초성)
-const initialMap = {
-  a:"ㅇ", e:"ㅇ", i:"ㅇ", o:"ㅇ", u:"ㅇ",
-  b:"ㅂ", p:"ㅂ", c:"ㅋ", k:"ㅋ", q:"ㅋ",
-  d:"ㄷ", t:"ㄷ", f:"ㅍ", v:"ㅍ", g:"ㄱ",
-  h:"ㅎ", j:"ㅈ", l:"ㄹ", r:"ㄹ", m:"ㅁ",
-  n:"ㄴ", s:"ㅅ", w:"ㅇ", y:"ㅇ", x:"ㅅ", z:"ㅈ"
-};
-
-const firstLetter = firstName[0]?.toLowerCase();
-const targetInitial = initialMap[firstLetter] || "ㅇ";
+// ✅ CSV 파일 결정
 const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
 
 // ✅ CSV 불러오기
@@ -82,48 +73,32 @@ fetch(csvFile)
   .then(text => {
     const rows = text.split("\n").slice(1);
     const data = rows.map(line => {
-      const [name, hanja, cat, meaning] = line.split(",");
+      const [name, hanja, cat, meaning, initial] = line.split(",");
       return {
         name: name?.trim(),
         hanja: hanja?.trim(),
         category: cat?.trim(),
-        meaning: meaning?.trim()
+        meaning: meaning?.trim(),
+        initial: initial?.trim()
       };
     }).filter(r => r.name && r.category);
 
-    // ✅ 초성 리스트
-    const choList = {
-      "ㄱ":["가","강","고","공","권","기","건"],
-      "ㄴ":["나","노","남","누","니"],
-      "ㄷ":["다","도","동","두"],
-      "ㄹ":["라","로","류","리"],
-      "ㅁ":["마","민","명","미","문"],
-      "ㅂ":["박","배","백","보","빈"],
-      "ㅅ":["서","소","수","시","선"],
-      "ㅇ":["아","안","오","우","유","은","이","여","윤"],
-      "ㅈ":["지","주","진","재","준","제"],
-      "ㅊ":["차","채","초"],
-      "ㅋ":["규","기","경"],
-      "ㅌ":["태","탁"],
-      "ㅍ":["표","필","풍"],
-      "ㅎ":["하","현","혜","효"]
-    };
-    const possible = choList[targetInitial] || [];
+    // ✅ 1단계: category로 필터링
+    const categoryFiltered = data.filter(r => r.category.toLowerCase() === category.toLowerCase());
 
-    // ✅ category + 초성 둘 다 필터링
-    let filtered = data.filter(r => 
-      r.category.toLowerCase() === category.toLowerCase() &&
-      possible.some(p => r.name?.startsWith(p))
-    );
+    // ✅ 2단계: 초성(initial)으로 필터링
+    let initialFiltered = categoryFiltered.filter(r => r.initial === firstLetter);
 
-    // ✅ 부족할 경우 category만 일치하도록 보충
-    if (filtered.length < 3) {
-      const backup = data.filter(r => r.category.toLowerCase() === category.toLowerCase());
-      filtered = [...filtered, ...backup.slice(0, 3 - filtered.length)];
+    // ✅ fallback: 초성 없으면 category 내에서 랜덤 3개
+    let finalList = [];
+    if (initialFiltered.length >= 3) {
+      finalList = initialFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
+    } else if (categoryFiltered.length >= 3) {
+      finalList = categoryFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
+    } else {
+      // 마지막 fallback: 전체에서 랜덤
+      finalList = data.sort(() => 0.5 - Math.random()).slice(0, 3);
     }
-
-    // ✅ 랜덤 3개 선택
-    const finalList = filtered.sort(() => 0.5 - Math.random()).slice(0, 3);
 
     // ✅ HTML 렌더링 (category 숨김)
     const html = finalList.map(r => `
