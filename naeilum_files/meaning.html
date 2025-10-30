@@ -57,18 +57,18 @@
   <p>What kind of meaning do you want your name to carry?</p>
 
   <div class="meaning-grid" id="meaningGrid">
-    <button class="meaning-btn">Wisdom</button>
     <button class="meaning-btn">Love</button>
-    <button class="meaning-btn">Beauty</button>
-    <button class="meaning-btn">Luck</button>
+    <button class="meaning-btn">Wisdom</button>
     <button class="meaning-btn">Harmony</button>
-    <button class="meaning-btn">Strength</button>
     <button class="meaning-btn">Hope</button>
-    <button class="meaning-btn">Diligence</button>
-    <button class="meaning-btn">Freedom</button>
     <button class="meaning-btn">Peace</button>
-    <button class="meaning-btn">Talent</button>
-    <button class="meaning-btn">Nature</button>
+    <button class="meaning-btn">Kindness</button>
+    <button class="meaning-btn">Light</button>
+    <button class="meaning-btn">Growth</button>
+    <button class="meaning-btn">Faith</button>
+    <button class="meaning-btn">Joy</button>
+    <button class="meaning-btn">Beauty</button>
+    <button class="meaning-btn">Strength</button>
   </div>
 
   <button id="nextBtn">Next →</button>
@@ -93,7 +93,7 @@
       const params = new URLSearchParams(window.location.search);
       const name = params.get("name");
       const gender = params.get("gender");
-      window.location.href = `result.html?name=${encodeURIComponent(name)}&gender=${gender}&meaning=${encodeURIComponent(selectedMeaning)}`;
+      window.location.href = `result.html?name=${encodeURIComponent(name)}&gender=${gender}&category=${encodeURIComponent(selectedMeaning)}`;
     });
   </script>
 </body>
