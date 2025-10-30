@@ -66,7 +66,7 @@ button:hover {
 const params = new URLSearchParams(window.location.search);
 const fullName = params.get("name")?.trim() || "";
 const gender = params.get("gender") || "female";
-const category = params.get("category")?.trim() || "";
+const category = params.get("meaning")?.trim() || ""; // meaning에서 넘어옴
 
 // ✅ First name 첫 글자만 사용
 const firstName = fullName.split(" ")[0] || fullName;
@@ -109,7 +109,7 @@ fetch(csvFile)
 
     // ✅ HTML 렌더링 (category 숨김)
     const html = finalList.map(r => `
-      <div class="card" onclick="checkFortune('${r.name}')">
+      <div class="card" onclick="checkFortune('${r.name}', '${category}')">
         <h3>${r.name}</h3>
         <p>${r.hanja}</p>
         <p class="meaning">${r.meaning}</p>
@@ -128,13 +128,24 @@ function goBack() {
   window.history.back();
 }
 
-// ✅ 이름 클릭 시 운세 페이지로 이동 (임시)
-function checkFortune(name) {
-  alert(`🔮 Checking today's fortune for ${name}...`);
-  // 향후 연결: window.location.href = `fortune.html?name=${encodeURIComponent(name)}`;
+// ✅ 이름 클릭 시 fortunes.json 불러와서 운세 표시
+function checkFortune(name, category) {
+  fetch("fortunes.json")
+    .then(res => res.json())
+    .then(data => {
+      const list = data[category];
+      if (!list || list.length === 0) {
+        alert(`${name}, your path today is calm and steady.`);
+        return;
+      }
+      const randomMsg = list[Math.floor(Math.random() * list.length)];
+      alert(`${name}, ${randomMsg}`);
+    })
+    .catch(() => {
+      alert(`${name}, may today bring quiet blessings.`);
+    });
 }
 </script>
 
 </body>
 </html>
-
