@@ -2,43 +2,38 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Your Korean Name | Naeilum</title>
+<title>Today's Fortune | Naeilum</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
 body {
   font-family: Pretendard, sans-serif;
+  background-color: #fafafa;
   text-align: center;
-  margin: 60px;
-  background: #fafafa;
+  margin: 80px 20px;
 }
-h2 { color: #333; margin-bottom: 8px; }
-p.subtitle {
-  color: #777;
-  font-size: 15px;
+h2 {
+  color: #2c3e50;
+  font-size: 26px;
+  font-weight: 700;
   margin-bottom: 40px;
 }
-.result-container {
-  display: flex;
-  justify-content: center;
-  gap: 25px;
-  margin-top: 20px;
-  flex-wrap: wrap;
-}
 .card {
-  width: 220px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
+  width: 420px;
+  margin: 0 auto;
   background: #fff;
-  padding: 20px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-  text-align: center;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   transition: transform 0.2s;
-  cursor: pointer;
 }
-.card:hover { transform: translateY(-5px); }
-.card h3 { font-size: 22px; color: #333; margin-bottom: 5px; }
-.card p { margin: 4px 0; color: #555; }
-.card .meaning { color: #4CAF50; font-weight: 600; }
+.card:hover {
+  transform: translateY(-4px);
+}
+.card p {
+  color: #555;
+  font-size: 18px;
+  line-height: 1.5;
+}
 button {
   margin-top: 40px;
   background-color: #4CAF50;
@@ -55,102 +50,42 @@ button:hover {
 </head>
 <body>
 
-<h2>✨ Your Korean Name Recommendations ✨</h2>
-<p class="subtitle">Click your favorite name to check today’s fortune ✨</p>
+<h2 id="fortuneTitle">🔮 Today's Fortune 🔮</h2>
 
-<div id="results" class="result-container">⏳ Loading results...</div>
-<button onclick="goBack()">← Choose Meaning Again</button>
+<div id="fortuneCard" class="card">
+  <p>Loading your fortune...</p>
+</div>
 
+<button onclick="goBack()">← Back to Results</button>
+
+<script src="./fortunes.js"></script>
 <script>
-// ✅ URL 파라미터 읽기
 const params = new URLSearchParams(window.location.search);
-const fullName = params.get("name")?.trim() || "";
-const gender = params.get("gender") || "female";
-const category = params.get("meaning")?.trim() || ""; // meaning에서 넘어옴
+const name = params.get("name") || "Your name";
+const category = params.get("category") || "";
+const fullName = params.get("fullname") || "";
+const displayName = fullName ? `${name} ${fullName}` : name;
 
-// ✅ First name 첫 글자만 사용
-const firstName = fullName.split(" ")[0] || fullName;
-const firstLetter = firstName[0]?.toUpperCase() || "A";
+// ✅ 제목: "Today's Fortune for 소연 Shin"
+document.getElementById("fortuneTitle").textContent = `🔮 Today's Fortune for ${displayName} 🔮`;
 
-// ✅ CSV 파일 결정
-const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
-
-// ✅ CSV 불러오기
-fetch(csvFile)
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.split("\n").slice(1);
-    const data = rows.map(line => {
-      const [name, hanja, cat, meaning, initial] = line.split(",");
-      return {
-        name: name?.trim(),
-        hanja: hanja?.trim(),
-        category: cat?.trim(),
-        meaning: meaning?.trim(),
-        initial: initial?.trim()
-      };
-    }).filter(r => r.name && r.category);
-
-    // ✅ 중복 제거 함수
-    function removeDuplicates(arr) {
-      const seen = new Set();
-      return arr.filter(item => {
-        if (seen.has(item.name)) return false;
-        seen.add(item.name);
-        return true;
-      });
-    }
-
-    // ✅ 1단계: category로 필터링
-    const categoryFiltered = removeDuplicates(
-      data.filter(r => r.category.toLowerCase() === category.toLowerCase())
-    );
-
-    // ✅ 2단계: 초성(initial)으로 필터링
-    let initialFiltered = removeDuplicates(
-      categoryFiltered.filter(r => r.initial === firstLetter)
-    );
-
-    // ✅ 전체 중복 제거된 데이터
-    const cleanAll = removeDuplicates(data);
-
-    // ✅ fallback: 초성 없으면 category 내에서 랜덤 3개
-    let finalList = [];
-    if (initialFiltered.length >= 3) {
-      finalList = initialFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
-    } else if (categoryFiltered.length >= 3) {
-      finalList = categoryFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
-    } else {
-      finalList = cleanAll.sort(() => 0.5 - Math.random()).slice(0, 3);
-    }
-
-    // ✅ HTML 렌더링
-    const html = finalList.map(r => `
-      <div class="card" onclick="checkFortune('${r.name}', '${category}', '${fullName}')">
-        <h3>${r.name}</h3>
-        <p>${r.hanja}</p>
-        <p class="meaning">${r.meaning}</p>
-      </div>
-    `).join("");
-
-    document.getElementById("results").innerHTML = html || "<p>No matching results found.</p>";
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("results").innerHTML = "<p>⚠️ Error loading data.</p>";
-  });
-
-// ✅ 뒤로 가기 버튼
-function goBack() {
-  window.history.back();
+// ✅ 운세 출력
+const list = fortunes[category];
+let fortune = "Your path today is calm and steady.";
+if (list && list.length > 0) {
+  fortune = list[Math.floor(Math.random() * list.length)];
 }
 
-// ✅ fortunes.html 경로 수정 (폴더 내부로 정확히 연결)
-function checkFortune(name, category, fullName) {
-  window.location.href = `./fortunes.html?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}&fullname=${encodeURIComponent(fullName)}`;
+document.getElementById("fortuneCard").innerHTML = `
+  <p>${name}, ${fortune}</p>
+`;
+
+function goBack() {
+  window.location.href = "./result.html";
 }
 </script>
 
 </body>
 </html>
+
 
