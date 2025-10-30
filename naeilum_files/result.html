@@ -104,15 +104,28 @@ fetch(csvFile)
     // ② 초성 매칭
     let filtered = data.filter(r => possible.some(p => r.name?.startsWith(p)));
 
+    // ✅ 중복 제거 (같은 이름은 한 번만)
+    const uniqueNames = [];
+    const uniqueFiltered = filtered.filter(r => {
+      if (!uniqueNames.includes(r.name)) {
+        uniqueNames.push(r.name);
+        return true;
+      }
+      return false;
+    });
+
     // ③ 결과 없으면 랜덤 추천 3개
-    if (filtered.length === 0) {
-      filtered = data.sort(() => 0.5 - Math.random()).slice(0, 3);
+    let finalList = [];
+    if (uniqueFiltered.length === 0) {
+      finalList = data.sort(() => 0.5 - Math.random())
+        .filter((r, idx, arr) => arr.findIndex(x => x.name === r.name) === idx)
+        .slice(0, 3);
     } else {
-      filtered = filtered.slice(0, 3);
+      finalList = uniqueFiltered.slice(0, 3);
     }
 
     // ④ HTML 렌더링
-    const html = filtered.map(r => `
+    const html = finalList.map(r => `
       <div class="card">
         <h3>${r.name}</h3>
         <p><b>Hanja:</b> ${r.hanja}</p>
@@ -126,6 +139,7 @@ fetch(csvFile)
     console.error(err);
     document.getElementById("results").innerHTML = "<p>⚠️ Error loading data.</p>";
   });
+
 
 // ✅ 뒤로 가기 버튼
 function goBack() {
