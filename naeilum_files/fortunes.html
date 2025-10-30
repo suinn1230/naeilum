@@ -75,7 +75,7 @@ const category = params.get("category") || "";
 const fullName = params.get("fullname") || ""; // optional English name
 const displayName = fullName ? `${name} ${fullName}` : name;
 
-fetch("fortunes.json")
+fetch("./fortunes.json")
   .then(res => res.json())
   .then(data => {
     const list = data[category];
@@ -103,4 +103,5 @@ function goBack() {
 
 </body>
 </html>
+
 
