@@ -25,7 +25,7 @@ p.subtitle {
   flex-wrap: wrap;
 }
 .card {
-  width: 240px;
+  width: 220px;
   border: 1px solid #ccc;
   border-radius: 12px;
   background: #fff;
@@ -36,9 +36,9 @@ p.subtitle {
   cursor: pointer;
 }
 .card:hover { transform: translateY(-5px); }
-.card h3 { font-size: 22px; color: #333; margin-bottom: 6px; }
-.card .romanized { font-size: 15px; color: #666; margin-bottom: 8px; }
-.card .meaning { color: #4CAF50; font-weight: 600; margin-top: 6px; }
+.card h3 { font-size: 22px; color: #333; margin-bottom: 5px; }
+.card p { margin: 4px 0; color: #555; }
+.card .meaning { color: #4CAF50; font-weight: 600; }
 button {
   margin-top: 40px;
   background-color: #4CAF50;
@@ -65,10 +65,11 @@ button:hover {
 const params = new URLSearchParams(window.location.search);
 const fullName = params.get("name")?.trim() || "";
 const gender = params.get("gender") || "female";
-const meaning = params.get("meaning")?.trim() || "";
+const meaning = params.get("meaning")?.trim() || ""; // meaning으로 넘어옴
 
 const firstName = fullName.split(" ")[0] || fullName;
 const firstLetter = firstName[0]?.toUpperCase() || "A";
+
 const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
 
 fetch(csvFile)
@@ -76,13 +77,12 @@ fetch(csvFile)
   .then(text => {
     const rows = text.split("\n").slice(1);
     const data = rows.map(line => {
-      const [name, hanja, cat, meaningText, romanized, initial] = line.split(",");
+      const [name, hanja, cat, meaningText, initial] = line.split(",");
       return {
         name: name?.trim(),
         hanja: hanja?.trim(),
         category: cat?.trim(),
         meaning: meaningText?.trim(),
-        romanized: romanized?.trim(),
         initial: initial?.trim()
       };
     }).filter(r => r.name && r.category);
@@ -101,8 +101,8 @@ fetch(csvFile)
 
     const html = finalList.map(r => `
       <div class="card" onclick="checkFortune('${r.name}', '${meaning}', '${fullName}')">
-        <h3>${r.name} (${r.hanja})</h3>
-        <p class="romanized">${r.romanized}</p>
+        <h3>${r.name}</h3>
+        <p>${r.hanja}</p>
         <p class="meaning">${r.meaning}</p>
       </div>
     `).join("");
@@ -114,6 +114,7 @@ function goBack() {
   window.history.back();
 }
 
+// ✅ fortunes.html로 정확히 meaning 전달
 function checkFortune(name, meaning, fullName) {
   window.location.href = `fortunes.html?name=${encodeURIComponent(name)}&meaning=${encodeURIComponent(meaning)}&fullname=${encodeURIComponent(fullName)}`;
 }
