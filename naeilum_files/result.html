@@ -56,20 +56,10 @@ button:hover {
 <script>
 // ✅ URL 파라미터 읽기
 const params = new URLSearchParams(window.location.search);
-const engName = params.get("name")?.trim() || "";
+const category = params.get("category")?.trim(); // 예: Harmony, Wisdom ...
 const gender = params.get("gender") || "female";
 
-// ✅ 초성 매핑 (영문 → 한글 초성)
-const initialMap = {
-  a:"ㅇ", e:"ㅇ", i:"ㅇ", o:"ㅇ", u:"ㅇ",
-  b:"ㅂ", p:"ㅂ", c:"ㅋ", k:"ㅋ", q:"ㅋ",
-  d:"ㄷ", t:"ㄷ", f:"ㅍ", v:"ㅍ", g:"ㄱ",
-  h:"ㅎ", j:"ㅈ", l:"ㄹ", r:"ㄹ", m:"ㅁ",
-  n:"ㄴ", s:"ㅅ", w:"ㅇ", y:"ㅇ", x:"ㅅ", z:"ㅈ"
-};
-
-const firstLetter = engName[0]?.toLowerCase();
-const targetInitial = initialMap[firstLetter] || "ㅇ";
+// ✅ CSV 파일 결정
 const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
 
 // ✅ CSV 불러오기
@@ -78,68 +68,43 @@ fetch(csvFile)
   .then(text => {
     const rows = text.split("\n").slice(1);
     const data = rows.map(line => {
-      const [name, hanja, meaning] = line.split(",");
-      return { name: name?.trim(), hanja: hanja?.trim(), meaning: meaning?.trim() };
-    }).filter(r => r.name);
+      const [name, hanja, cat, meaning] = line.split(",");
+      return {
+        name: name?.trim(),
+        hanja: hanja?.trim(),
+        category: cat?.trim(),
+        meaning: meaning?.trim()
+      };
+    }).filter(r => r.name && r.category);
 
-    // ① 초성 리스트
-    const choList = {
-      "ㄱ":["가","강","고","공","권","기","건"],
-      "ㄴ":["나","노","남","누","니"],
-      "ㄷ":["다","도","동","두"],
-      "ㄹ":["라","로","류","리"],
-      "ㅁ":["마","민","명","미","문"],
-      "ㅂ":["박","배","백","보","빈"],
-      "ㅅ":["서","소","수","시","선"],
-      "ㅇ":["아","안","오","우","유","은","이","여","윤"],
-      "ㅈ":["지","주","진","재","준","제"],
-      "ㅊ":["차","채","초"],
-      "ㅋ":["규","기","경"],
-      "ㅌ":["태","탁"],
-      "ㅍ":["표","필","풍"],
-      "ㅎ":["하","현","혜","효"]
-    };
-    const possible = choList[targetInitial] || [];
+    // ✅ 카테고리 필터링
+    let filtered = data.filter(r => r.category === category);
 
-    // ② 초성 매칭
-    let filtered = data.filter(r => possible.some(p => r.name?.startsWith(p)));
-
-    // ✅ 중복 제거 (같은 이름은 한 번만)
-    const uniqueNames = [];
-    const uniqueFiltered = filtered.filter(r => {
-      if (!uniqueNames.includes(r.name)) {
-        uniqueNames.push(r.name);
-        return true;
-      }
-      return false;
-    });
-
-    // ③ 결과 없으면 랜덤 추천 3개
-    let finalList = [];
-    if (uniqueFiltered.length === 0) {
-      finalList = data.sort(() => 0.5 - Math.random())
-        .filter((r, idx, arr) => arr.findIndex(x => x.name === r.name) === idx)
-        .slice(0, 3);
-    } else {
-      finalList = uniqueFiltered.slice(0, 3);
+    // ✅ 부족할 경우 랜덤으로 보충
+    if (filtered.length < 3) {
+      const others = data.filter(r => r.category !== category);
+      filtered = [...filtered, ...others.slice(0, 3 - filtered.length)];
     }
 
-    // ④ HTML 렌더링
-    const html = finalList.map(r => `
+    // ✅ 무작위로 섞기
+    const random3 = filtered.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+    // ✅ HTML 렌더링
+    const html = random3.map(r => `
       <div class="card">
         <h3>${r.name}</h3>
         <p><b>Hanja:</b> ${r.hanja}</p>
+        <p><b>Category:</b> ${r.category}</p>
         <p class="meaning">${r.meaning}</p>
       </div>
     `).join("");
 
-    document.getElementById("results").innerHTML = html;
+    document.getElementById("results").innerHTML = html || "<p>No results found.</p>";
   })
   .catch(err => {
     console.error(err);
     document.getElementById("results").innerHTML = "<p>⚠️ Error loading data.</p>";
   });
-
 
 // ✅ 뒤로 가기 버튼
 function goBack() {
