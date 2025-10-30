@@ -11,8 +11,37 @@ body {
   text-align: center;
   margin: 80px 20px;
 }
-h2 { color: #333; }
-p { color: #555; font-size: 18px; margin-top: 20px; }
+h2 {
+  color: #333;
+  margin-bottom: 12px;
+}
+.subtitle {
+  color: #777;
+  font-size: 16px;
+  margin-bottom: 40px;
+}
+.card {
+  width: 420px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+.card:hover {
+  transform: translateY(-4px);
+}
+.card h3 {
+  color: #2c3e50;
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+.card p {
+  color: #555;
+  font-size: 18px;
+  line-height: 1.5;
+}
 button {
   margin-top: 40px;
   background-color: #4CAF50;
@@ -22,34 +51,49 @@ button {
   border-radius: 8px;
   cursor: pointer;
 }
-button:hover { background-color: #45a049; }
+button:hover {
+  background-color: #45a049;
+}
 </style>
 </head>
 <body>
 
-<h2 id="fortuneTitle">🔮 Loading your fortune...</h2>
-<p id="fortuneText"></p>
+<h2>🔮 Today’s Fortune 🔮</h2>
+<p class="subtitle">Your personalized fortune based on your name’s meaning</p>
 
-<button onclick="goBack()">← Choose Another Name</button>
+<div id="fortuneCard" class="card">
+  <h3>Loading your fortune...</h3>
+  <p>Please wait a moment ⏳</p>
+</div>
+
+<button onclick="goBack()">← Back to Results</button>
 
 <script>
 const params = new URLSearchParams(window.location.search);
-const name = params.get("name");
-const category = params.get("category");
+const name = params.get("name") || "Your name";
+const category = params.get("category") || "";
+const fullName = params.get("fullname") || ""; // optional English name
+const displayName = fullName ? `${name} ${fullName}` : name;
 
 fetch("fortunes.json")
   .then(res => res.json())
   .then(data => {
     const list = data[category];
-    let fortune = "Your day will bring quiet blessings.";
+    let fortune = "Your path today is calm and steady.";
     if (list && list.length > 0) {
       fortune = list[Math.floor(Math.random() * list.length)];
     }
-    document.getElementById("fortuneTitle").innerText = `✨ ${name}, today’s fortune ✨`;
-    document.getElementById("fortuneText").innerText = `${name}, ${fortune}`;
+
+    document.getElementById("fortuneCard").innerHTML = `
+      <h3>${displayName}를 위한 오늘의 운세</h3>
+      <p>${name}, ${fortune}</p>
+    `;
   })
   .catch(() => {
-    document.getElementById("fortuneText").innerText = `${name}, your day will unfold with gentle peace.`;
+    document.getElementById("fortuneCard").innerHTML = `
+      <h3>${displayName}를 위한 오늘의 운세</h3>
+      <p>${name}, your day will unfold with gentle peace.</p>
+    `;
   });
 
 function goBack() {
@@ -59,3 +103,4 @@ function goBack() {
 
 </body>
 </html>
+
