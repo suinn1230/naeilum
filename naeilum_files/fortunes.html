@@ -68,36 +68,30 @@ button:hover {
 
 <button onclick="goBack()">← Back to Results</button>
 
+<!-- ✅ fortunes.js 불러오기 -->
+<script src="fortunes.js"></script>
+
 <script>
 const params = new URLSearchParams(window.location.search);
 const name = params.get("name") || "Your name";
 const category = params.get("category") || "";
-const fullName = params.get("fullname") || ""; // optional English name
+const fullName = params.get("fullname") || ""; 
 const displayName = fullName ? `${name} ${fullName}` : name;
 
-fetch("./fortunes.json")
-  .then(res => res.json())
-  .then(data => {
-    const list = data[category];
-    let fortune = "Your path today is calm and steady.";
-    if (list && list.length > 0) {
-      fortune = list[Math.floor(Math.random() * list.length)];
-    }
+// ✅ fortunes.js에서 불러온 데이터 사용
+const list = fortunes[category];
+let fortune = "Your path today is calm and steady.";
+if (list && list.length > 0) {
+  fortune = list[Math.floor(Math.random() * list.length)];
+}
 
-    document.getElementById("fortuneCard").innerHTML = `
-      <h3>${displayName}를 위한 오늘의 운세</h3>
-      <p>${name}, ${fortune}</p>
-    `;
-  })
-  .catch(() => {
-    document.getElementById("fortuneCard").innerHTML = `
-      <h3>${displayName}를 위한 오늘의 운세</h3>
-      <p>${name}, your day will unfold with gentle peace.</p>
-    `;
-  });
+document.getElementById("fortuneCard").innerHTML = `
+  <h3>${displayName}를 위한 오늘의 운세</h3>
+  <p>${name}, ${fortune}</p>
+`;
 
 function goBack() {
-  window.history.back();
+  window.location.href = "result.html";
 }
 </script>
 
