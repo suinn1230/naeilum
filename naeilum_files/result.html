@@ -128,24 +128,12 @@ function goBack() {
   window.history.back();
 }
 
-// ✅ 이름 클릭 시 fortunes.json 불러와서 운세 표시
+// ✅ 이름 클릭 시 fortune.html로 이동
 function checkFortune(name, category) {
-  fetch("fortunes.json")
-    .then(res => res.json())
-    .then(data => {
-      const list = data[category];
-      if (!list || list.length === 0) {
-        alert(`${name}, your path today is calm and steady.`);
-        return;
-      }
-      const randomMsg = list[Math.floor(Math.random() * list.length)];
-      alert(`${name}, ${randomMsg}`);
-    })
-    .catch(() => {
-      alert(`${name}, may today bring quiet blessings.`);
-    });
+  window.location.href = `fortune.html?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}`;
 }
 </script>
 
 </body>
 </html>
+
