@@ -91,11 +91,28 @@ fetch(csvFile)
       };
     }).filter(r => r.name && r.category);
 
+    // ✅ 중복 제거 함수
+    function removeDuplicates(arr) {
+      const seen = new Set();
+      return arr.filter(item => {
+        if (seen.has(item.name)) return false;
+        seen.add(item.name);
+        return true;
+      });
+    }
+
     // ✅ 1단계: category로 필터링
-    const categoryFiltered = data.filter(r => r.category.toLowerCase() === category.toLowerCase());
+    const categoryFiltered = removeDuplicates(
+      data.filter(r => r.category.toLowerCase() === category.toLowerCase())
+    );
 
     // ✅ 2단계: 초성(initial)으로 필터링
-    let initialFiltered = categoryFiltered.filter(r => r.initial === firstLetter);
+    let initialFiltered = removeDuplicates(
+      categoryFiltered.filter(r => r.initial === firstLetter)
+    );
+
+    // ✅ 전체 중복 제거된 데이터
+    const cleanAll = removeDuplicates(data);
 
     // ✅ fallback: 초성 없으면 category 내에서 랜덤 3개
     let finalList = [];
@@ -104,12 +121,12 @@ fetch(csvFile)
     } else if (categoryFiltered.length >= 3) {
       finalList = categoryFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
     } else {
-      finalList = data.sort(() => 0.5 - Math.random()).slice(0, 3);
+      finalList = cleanAll.sort(() => 0.5 - Math.random()).slice(0, 3);
     }
 
     // ✅ HTML 렌더링 (category 숨김)
     const html = finalList.map(r => `
-      <div class="card" onclick="checkFortune('${r.name}', '${category}')">
+      <div class="card" onclick="checkFortune('${r.name}', '${category}', '${fullName}')">
         <h3>${r.name}</h3>
         <p>${r.hanja}</p>
         <p class="meaning">${r.meaning}</p>
@@ -128,12 +145,11 @@ function goBack() {
   window.history.back();
 }
 
-// ✅ 이름 클릭 시 fortune.html로 이동
-function checkFortune(name, category) {
-  window.location.href = `fortune.html?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}`;
+// ✅ 이름 클릭 시 fortunes.html로 이동
+function checkFortune(name, category, fullName) {
+  window.location.href = `fortunes.html?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}&fullname=${encodeURIComponent(fullName)}`;
 }
 </script>
 
 </body>
 </html>
-
