@@ -11,12 +11,17 @@ body {
   margin: 60px;
   background: #fafafa;
 }
-h2 { color: #333; }
+h2 { color: #333; margin-bottom: 8px; }
+p.subtitle {
+  color: #777;
+  font-size: 15px;
+  margin-bottom: 40px;
+}
 .result-container {
   display: flex;
   justify-content: center;
   gap: 25px;
-  margin-top: 50px;
+  margin-top: 20px;
   flex-wrap: wrap;
 }
 .card {
@@ -28,6 +33,7 @@ h2 { color: #333; }
   box-shadow: 0 3px 6px rgba(0,0,0,0.1);
   text-align: center;
   transition: transform 0.2s;
+  cursor: pointer;
 }
 .card:hover { transform: translateY(-5px); }
 .card h3 { font-size: 22px; color: #333; margin-bottom: 5px; }
@@ -50,8 +56,10 @@ button:hover {
 <body>
 
 <h2>✨ Your Korean Name Recommendations ✨</h2>
+<p class="subtitle">Click your favorite name to check today’s fortune ✨</p>
+
 <div id="results" class="result-container">⏳ Loading results...</div>
-<button onclick="goBack()">← Go Back</button>
+<button onclick="goBack()">← Choose Meaning Again</button>
 
 <script>
 // ✅ URL 파라미터 읽기
@@ -96,13 +104,12 @@ fetch(csvFile)
     } else if (categoryFiltered.length >= 3) {
       finalList = categoryFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
     } else {
-      // 마지막 fallback: 전체에서 랜덤
       finalList = data.sort(() => 0.5 - Math.random()).slice(0, 3);
     }
 
     // ✅ HTML 렌더링 (category 숨김)
     const html = finalList.map(r => `
-      <div class="card">
+      <div class="card" onclick="checkFortune('${r.name}')">
         <h3>${r.name}</h3>
         <p>${r.hanja}</p>
         <p class="meaning">${r.meaning}</p>
@@ -120,7 +127,14 @@ fetch(csvFile)
 function goBack() {
   window.history.back();
 }
+
+// ✅ 이름 클릭 시 운세 페이지로 이동 (임시)
+function checkFortune(name) {
+  alert(`🔮 Checking today's fortune for ${name}...`);
+  // 향후 연결: window.location.href = `fortune.html?name=${encodeURIComponent(name)}`;
+}
 </script>
 
 </body>
 </html>
+
