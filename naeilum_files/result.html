@@ -25,7 +25,7 @@ p.subtitle {
   flex-wrap: wrap;
 }
 .card {
-  width: 220px;
+  width: 240px;
   border: 1px solid #ccc;
   border-radius: 12px;
   background: #fff;
@@ -36,9 +36,9 @@ p.subtitle {
   cursor: pointer;
 }
 .card:hover { transform: translateY(-5px); }
-.card h3 { font-size: 22px; color: #333; margin-bottom: 5px; }
-.card p { margin: 4px 0; color: #555; }
-.card .meaning { color: #4CAF50; font-weight: 600; }
+.card h3 { font-size: 22px; color: #333; margin-bottom: 6px; }
+.card .romanized { font-size: 15px; color: #666; margin-bottom: 8px; }
+.card .meaning { color: #4CAF50; font-weight: 600; margin-top: 6px; }
 button {
   margin-top: 40px;
   background-color: #4CAF50;
@@ -62,92 +62,60 @@ button:hover {
 <button onclick="goBack()">← Choose Meaning Again</button>
 
 <script>
-// ✅ URL 파라미터 읽기
 const params = new URLSearchParams(window.location.search);
 const fullName = params.get("name")?.trim() || "";
 const gender = params.get("gender") || "female";
-const category = params.get("meaning")?.trim() || ""; // meaning에서 넘어옴
+const meaning = params.get("meaning")?.trim() || "";
 
-// ✅ First name 첫 글자만 사용
 const firstName = fullName.split(" ")[0] || fullName;
 const firstLetter = firstName[0]?.toUpperCase() || "A";
-
-// ✅ CSV 파일 결정
 const csvFile = gender === "male" ? "male_names.csv" : "female_names.csv";
 
-// ✅ CSV 불러오기
 fetch(csvFile)
   .then(res => res.text())
   .then(text => {
     const rows = text.split("\n").slice(1);
     const data = rows.map(line => {
-      const [name, hanja, cat, meaning, initial] = line.split(",");
+      const [name, hanja, cat, meaningText, romanized, initial] = line.split(",");
       return {
         name: name?.trim(),
         hanja: hanja?.trim(),
         category: cat?.trim(),
-        meaning: meaning?.trim(),
+        meaning: meaningText?.trim(),
+        romanized: romanized?.trim(),
         initial: initial?.trim()
       };
     }).filter(r => r.name && r.category);
 
-    // ✅ 중복 제거 함수
-    function removeDuplicates(arr) {
-      const seen = new Set();
-      return arr.filter(item => {
-        if (seen.has(item.name)) return false;
-        seen.add(item.name);
-        return true;
-      });
-    }
+    const categoryFiltered = data.filter(r => r.category.toLowerCase() === meaning.toLowerCase());
+    const initialFiltered = categoryFiltered.filter(r => r.initial === firstLetter);
 
-    // ✅ 1단계: category로 필터링
-    const categoryFiltered = removeDuplicates(
-      data.filter(r => r.category.toLowerCase() === category.toLowerCase())
-    );
-
-    // ✅ 2단계: 초성(initial)으로 필터링
-    let initialFiltered = removeDuplicates(
-      categoryFiltered.filter(r => r.initial === firstLetter)
-    );
-
-    // ✅ 전체 중복 제거된 데이터
-    const cleanAll = removeDuplicates(data);
-
-    // ✅ fallback: 초성 없으면 category 내에서 랜덤 3개
     let finalList = [];
     if (initialFiltered.length >= 3) {
       finalList = initialFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
     } else if (categoryFiltered.length >= 3) {
       finalList = categoryFiltered.sort(() => 0.5 - Math.random()).slice(0, 3);
     } else {
-      finalList = cleanAll.sort(() => 0.5 - Math.random()).slice(0, 3);
+      finalList = data.sort(() => 0.5 - Math.random()).slice(0, 3);
     }
 
-    // ✅ HTML 렌더링
     const html = finalList.map(r => `
-      <div class="card" onclick="checkFortune('${r.name}', '${category}', '${fullName}')">
-        <h3>${r.name}</h3>
-        <p>${r.hanja}</p>
+      <div class="card" onclick="checkFortune('${r.name}', '${meaning}', '${fullName}')">
+        <h3>${r.name} (${r.hanja})</h3>
+        <p class="romanized">${r.romanized}</p>
         <p class="meaning">${r.meaning}</p>
       </div>
     `).join("");
 
     document.getElementById("results").innerHTML = html || "<p>No matching results found.</p>";
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("results").innerHTML = "<p>⚠️ Error loading data.</p>";
   });
 
-// ✅ 뒤로 가기 버튼
 function goBack() {
   window.history.back();
 }
 
-// ✅ fortunes.html 경로 수정 (폴더 내부로 정확히 연결)
-function checkFortune(name, category, fullName) {
-  window.location.href = `./fortunes.html?name=${encodeURIComponent(name)}&category=${encodeURIComponent(category)}&fullname=${encodeURIComponent(fullName)}`;
+function checkFortune(name, meaning, fullName) {
+  window.location.href = `fortunes.html?name=${encodeURIComponent(name)}&meaning=${encodeURIComponent(meaning)}&fullname=${encodeURIComponent(fullName)}`;
 }
 </script>
 
